@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Opening link…</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #111827; color: #f9fafb; font: 16px system-ui, sans-serif; }
+    main { width: min(90%, 520px); text-align: center; }
+    .bar { height: 4px; margin-top: 24px; border-radius: 999px; background: #374151; overflow: hidden; }
+    .bar::after { content: ""; display: block; height: 100%; width: 35%; background: #60a5fa; animation: move 1.2s ease-in-out infinite; }
+    @keyframes move { from { transform: translateX(-120%); } to { transform: translateX(330%); } }
+    .error { color: #fca5a5; line-height: 1.6; }
+    code { color: #bfdbfe; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <main id="app" aria-live="polite">
+    <h1>লিংক খোলা হচ্ছে…</h1>
+    <p>দয়া করে একটু অপেক্ষা করুন।</p>
+    <div class="bar" aria-hidden="true"></div>
+  </main>
+<script>
+  // Replace this with your own shop domain(s). Do not add third-party shorteners.
+  const ALLOWED_HOSTS = ["your-shop.example"];
+  const MAX_WAIT_MS = 8000;
+
+  function showError(message) {
+    document.getElementById("app").innerHTML =
+      `<h1>লিংক খোলা যায়নি</h1><p class="error">${message}</p>`;
+  }
+
+  function getTarget() {
+    const params = new URLSearchParams(location.search);
+    const raw = params.get("link");
+    if (!raw) throw new Error("URL-এর শেষে ?link=YOUR_SHOP_URL যোগ করুন।");
+    let target;
+    try { target = new URL(raw); } catch (_) { throw new Error("লিংকটি সঠিক URL নয়।"); }
+    if (target.protocol !== "https:") throw new Error("শুধু HTTPS link অনুমোদিত।");
+    if (!ALLOWED_HOSTS.includes(target.hostname)) throw new Error("এই domain অনুমোদিত নয়।");
+    return target.href;
+  }
+
+  try {
+    const target = getTarget();
+    setTimeout(() => { location.replace(target); }, 900);
+    setTimeout(() => { showError("Redirect timeout হয়েছে। আবার চেষ্টা করুন।"); }, MAX_WAIT_MS);
+  } catch (error) {
+    showError(error.message);
+  }
+</script>
+</body>
+</html>
